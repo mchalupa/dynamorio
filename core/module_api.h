@@ -291,6 +291,16 @@ DR_API
 bool
 dr_module_contains_addr(const module_data_t *data, app_pc addr);
 
+DR_API
+/**
+ * If \p addr is contained in any mapped segment of the module
+ * (\see dr_module_contains_addr), this function returns the position (offset)
+ * of this address in the module, relative to the beginning of the module.
+ * Otherwise, it returns INVALID_OFFSET
+ */
+size_t
+dr_module_addr_offset(const module_data_t *data, app_pc addr);
+
 /**
  * Iterator over the list of modules that a given module imports from.  Created
  * by calling dr_module_import_iterator_start() and must be freed by calling

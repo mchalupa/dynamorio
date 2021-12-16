@@ -223,6 +223,33 @@ dr_module_contains_addr(const module_data_t *data, app_pc addr)
 #endif
 }
 
+#define INVALID_OFFSET (~(size_t)0)
+DR_API
+/* Get the offset of a mapped address in the module.
+ * Returns INVALID_OFFSET if addr is not mapped from this module */
+size_t
+dr_module_addr_offset(const module_data_t *data, app_pc addr)
+{
+    /* XXX: this duplicates module_contains_addr(), but we have two different
+     * data structures (module_area_t and module_data_t) so it's hard to share.
+     */
+#ifdef WINDOWS
+    if (addr >= data->start && addr < data->end)
+        return (size_t)(addr - data->start);
+#else
+    if (data->contiguous) {
+        if (addr >= data->start && addr < data->end)
+	    return (size_t)(addr - data->start);
+    } else {
+        for (uint i = 0; i < data->num_segments; i++) {
+            if (addr >= data->segments[i].start && addr < data->segments[i].end)
+                return (size_t)(addr - data->segments[i].start) + data->segments[i].offset;
+        }
+    }
+#endif
+    return INVALID_OFFSET;
+}
+
 DR_API
 /* Looks up the module data containing pc.  Returns NULL if not found.
  * Returned module_data_t must be freed with dr_free_module_data(). */
